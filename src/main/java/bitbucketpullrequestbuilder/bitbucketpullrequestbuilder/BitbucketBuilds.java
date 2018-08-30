@@ -36,14 +36,18 @@ public class BitbucketBuilds {
         if (cause == null) {
             return;
         }
-        JenkinsLocationConfiguration globalConfig = new JenkinsLocationConfiguration();
-        String rootUrl = globalConfig.getUrl();
-        if (rootUrl == null) {
-            logger.warning("PLEASE SET JENKINS ROOT URL IN GLOBAL CONFIGURATION FOR BUILD STATE REPORTING");
+        JenkinsLocationConfiguration globalConfig = JenkinsLocationConfiguration.get();
+        if (globalConfig == null) {
+            logger.warning("Unable to get location configuration");
         } else {
-            buildUrl = rootUrl + buildUrl;
-            BuildState state = result == Result.SUCCESS ? BuildState.SUCCESSFUL : BuildState.FAILED;
-            repository.setBuildStatus(cause, state, buildUrl);
+            String rootUrl = globalConfig.getUrl();
+            if (rootUrl == null) {
+                logger.warning("PLEASE SET JENKINS ROOT URL IN GLOBAL CONFIGURATION FOR BUILD STATE REPORTING");
+            } else {
+                buildUrl = rootUrl + buildUrl;
+                BuildState state = result == Result.SUCCESS ? BuildState.SUCCESSFUL : BuildState.FAILED;
+                repository.setBuildStatus(cause, state, buildUrl);
+            }
         }
 
         if (this.trigger.getApproveIfSuccess() && result == Result.SUCCESS) {
